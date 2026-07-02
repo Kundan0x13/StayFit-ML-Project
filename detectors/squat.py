@@ -63,7 +63,7 @@ class SquatDetector(BaseExercise):
             if knee_angle < self.DOWN_THRESHOLD:
                 self.stage = "down"
 
-            if knee_angle >= self.UP_THRESHOLD and self.stage == "down":
+            if knee_angle >= self.UP_THRESHOLD and self.stage == "down": # down -> up = 1 rep
                 self.stage = "up"
                 self.reps += 1
 
@@ -74,7 +74,7 @@ class SquatDetector(BaseExercise):
         else:
             depth_status = "N/A"
 
-        return {
+        return { # return metrics 
             "reps": self.reps,
             "knee_angle": int(knee_angle),
             "back_angle": int(back_angle),
