@@ -111,7 +111,11 @@ def main():
                 st.metric("Front Knee Angle", f"{st.session_state.front_knee_angle}°")
                 st.metric("Torso Angle", f"{st.session_state.torso_angle}°")
                 st.metric("Balance Status", st.session_state.balance_status)
-
+    
+    
+    # Video Feature
+    st.title("StayFit - Your AI Gym Coach")
+    st.markdown("Powered by AI, Driven by You 😉")
 
 if __name__ == "__main__":
     main()
