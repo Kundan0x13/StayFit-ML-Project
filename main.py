@@ -9,6 +9,8 @@ from services.persistence.exercise_repository import init_db
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 from services.vision.exercise_video_processor import VideoProcessorClass
 from services.tracking.metrics import sync_metrics_update
+from services.persistence.exercise_repository import get_users_exercises
+import pandas as pd
 
 # st.title("StayFit : AI Gym Coach")
 # st.write("Welcome to StayFit! Login to start your fitness journey.")
@@ -164,7 +166,43 @@ def main():
             
         inject_webrtc_styles()
         
-        st.markdown("## Workout History")
+        st.divider()
+        st.subheader("Workout History")
+        
+        user_id = st.session_state.get("user_id", 0)
+
+    if isinstance(user_id, int):
+        history_rows = get_users_exercises(user_id)
+
+        df_arr = [
+            {
+                "Exercise": row["exercise_name"],
+                "Reps": row["reps"],
+                "Sets": row["sets"],
+                "Time (sec)": row["time"],
+                "Date": row["created_at"]
+            }
+            for row in history_rows
+        ]
+
+        # create dataframe of fetched workout history
+        df = pd.DataFrame(df_arr)
+
+        if not df.empty:
+            df["Date"] = pd.to_datetime(df["Date"]).dt.date     # chage date format
+            agg_df = df.groupby(["Exercise", "Date"]).agg(      # aggregate history for same day , same exercise
+                {
+                    'Reps': 'sum',
+                    "Sets": 'sum',
+                    "Time (sec)": 'sum'
+                }
+            ).reset_index()
+            agg_df.index += 1       # index start from 0 -> +1 
+            
+            st.table(agg_df, border="horizontal")   # displays table from dataframe
+        else:
+            st.info("No workout history found.")
+        
         
 if __name__ == "__main__":
     main()
