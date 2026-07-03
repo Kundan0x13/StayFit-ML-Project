@@ -28,6 +28,7 @@ def initialize_session_defaults():
         "torso_angle": 0,
 
         # Status fields
+        "elbow_status": "N/A",
         "depth_status": "N/A",
         "body_alignment": "N/A",
         "hip_status": "N/A",

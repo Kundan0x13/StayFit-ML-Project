@@ -7,7 +7,7 @@ class BicepsCurlDetector(BaseExercise):
     DOWN_THRESHOLD = 160
     MIN_VISIBILITY = 0.7
     ELBOW_DRIFT_TOLERANCE = 0.06         
-    SWING_THRESHOLD = 15
+    SWING_THRESHOLD = 10
 
     # Required landmarks for biceps curl detection
     LEFT_SHOULDER = 11

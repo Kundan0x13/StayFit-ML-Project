@@ -25,7 +25,7 @@ METRICS_FIELDS = {
         "body_alignment": "N/A",
         "hip_status": "N/A",
     },
-    "Biceps Curls (Dumbbell)": {
+    "Biceps Curls": {
         "elbow_angle": 0,
         "elbow_status": "N/A",
         "swing_status": "N/A",

@@ -59,9 +59,10 @@ def main():
                 st.rerun()
         else: 
             st.write("Workout started! Keep going!")
-            exercise = st.session_state.get("plan_exercise")
-            sets = st.session_state.get("plan_sets")
-            reps = st.session_state.get("plan_reps")
+            exercise = st.session_state.get("exercise_type")
+            sets = st.session_state.get("target_sets")
+            reps = st.session_state.get("reps_per_set")
+            
             
             st.info(f"**{exercise}** - {sets} Sets/{reps} Reps")
             
@@ -103,7 +104,7 @@ def main():
             elif exercise == "Biceps Curls":
                 st.subheader("Curl Metrics")
                 st.metric("Elbow Angle", f"{st.session_state.elbow_angle}°")
-                st.metric("Elbow Stability", st.session_state.Elbow_status)
+                st.metric("Elbow Stability", st.session_state.elbow_status)
                 st.metric("Swing Detection", st.session_state.swing_status)
 
             elif exercise == "Shoulder Press":

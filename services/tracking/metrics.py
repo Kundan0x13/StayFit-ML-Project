@@ -4,7 +4,7 @@ import time
 from services.persistence.exercise_repository import add_exercise
 
 def sync_metrics_update(context):
-    if not context or not hasattr(context, "state") or not context.state.playing:
+    if  not context or not hasattr(context, "state") or not context.state.playing:
         return
     
     processor = getattr(context, "video_processor", None)
