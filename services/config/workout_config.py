@@ -27,7 +27,7 @@ METRICS_FIELDS = {
     },
     "Biceps Curls (Dumbbell)": {
         "elbow_angle": 0,
-        "shoulder_status": "N/A",
+        "elbow_status": "N/A",
         "swing_status": "N/A",
     },
     "Shoulder Press": {

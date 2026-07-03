@@ -3,10 +3,12 @@ from services.auth.login_wall import render_login_wall
 from services.state.session_defaults import initialize_session_defaults
 from services.config.workout_config import EXERCISE_OPTIONS
 import os
+import time
 from services.ui.style_loader import load_css, inject_local_font, inject_webrtc_styles 
 from services.persistence.exercise_repository import init_db
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 from services.vision.exercise_video_processor import VideoProcessorClass
+from services.tracking.metrics import sync_metrics_update
 
 # st.title("StayFit : AI Gym Coach")
 # st.write("Welcome to StayFit! Login to start your fitness journey.")
@@ -37,21 +39,21 @@ def main():
         st.divider()
         
         if not workout_started:
-            exercise = st.selectbox("Select Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
-            st.number_input("Target Sets", min_value=1, max_value=10, value=3, step=1, key="plan_sets")
-            st.number_input("Reps per Set", min_value=1, max_value=50, value=10, step=1, key="plan_reps")
+            plan_exercise = st.selectbox("Select Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
+            plan_sets = st.number_input("Target Sets", min_value=1, max_value=10, value=3, step=1, key="plan_sets")
+            plan_reps = st.number_input("Reps per Set", min_value=1, max_value=50, value=10, step=1, key="plan_reps")
             start_session_button = st.button("Start Workout", key="start_workout_button", width="stretch")
             
             if start_session_button:
-                st.session_state["workout_started"] = True
-                st.session_state["sets_completed"] = 0
-                st.session_state["current_set_reps"] = 0
-                st.session_state["last_notified_sets_completed"] = 0
-                st.session_state["last_notified_workout_complete"] = False
-                st.session_state["last_saved_sets_completed"] = 0
-                st.session_state["set_cycle_started_at"] = 0.0
-                st.session_state["last_exercise_type"] = st.session_state.get("plan_exercise", "Squats")
-                st.success("Workout session started!")
+                st.session_state.exercise_type = plan_exercise
+                st.session_state.target_sets = int(plan_sets)
+                st.session_state.reps_per_set = int(plan_reps)
+                st.session_state.reps = 0
+                st.session_state.workout_started = True
+                st.session_state.set_cycle_started_at = time.time()
+                st.session_state.last_saved_sets_completed = 0
+                st.session_state.last_modified_sets_completed = 0
+                st.session_state.last_saved_workout_completed = 0
                 st.rerun()
         else: 
             st.write("Workout started! Keep going!")
@@ -65,19 +67,19 @@ def main():
             
             if end_workout_button:
                 st.session_state["workout_started"] = False
-                st.success("Workout session ended!")
+                # st.success("Workout session ended!")
                 st.rerun()
         
         if workout_started:
             st.divider()
             st.write("### Progress")
             
-            exercise = st.session_state.get("plan_exercise")
-            sets_completed = st.session_state.get("sets_completed", 0)
-            target_sets = st.session_state.get("plan_sets", 0)
+            exercise = st.session_state.get("exercise_type")
             current_set_reps = st.session_state.get("current_set_reps", 0)
-            reps_per_set = st.session_state.get("plan_reps", 0)
+            reps_per_set = st.session_state.get("reps_per_set", 0)
             total_reps = st.session_state.get("reps", 0)
+            sets_completed = st.session_state.get("sets_completed", 0)
+            target_sets = st.session_state.get("target_sets", 0)
             
             st.metric(label="Total Reps", value=total_reps)
             st.metric(label="Current Set Reps", value=f"{current_set_reps}/{reps_per_set}")
@@ -99,7 +101,7 @@ def main():
             elif exercise == "Biceps Curls":
                 st.subheader("Curl Metrics")
                 st.metric("Elbow Angle", f"{st.session_state.elbow_angle}°")
-                st.metric("Shoulder Stability", st.session_state.shoulder_status)
+                st.metric("Elbow Stability", st.session_state.Elbow_status)
                 st.metric("Swing Detection", st.session_state.swing_status)
 
             elif exercise == "Shoulder Press":
@@ -153,6 +155,13 @@ def main():
             rtc_configuration = {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
             
         )
+        
+        sync_metrics_update(context)
+        
+        if context.state.playing:
+            time.sleep(0.25)
+            st.rerun()
+            
         inject_webrtc_styles()
         
         st.markdown("## Workout History")
