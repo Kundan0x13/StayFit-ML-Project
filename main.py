@@ -6,6 +6,7 @@ import os
 from services.ui.style_loader import load_css, inject_local_font, inject_webrtc_styles 
 from services.persistence.exercise_repository import init_db
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
+from services.vision.exercise_video_processor import VideoProcessorClass
 
 # st.title("StayFit : AI Gym Coach")
 # st.write("Welcome to StayFit! Login to start your fitness journey.")
@@ -36,7 +37,7 @@ def main():
         st.divider()
         
         if not workout_started:
-            st.selectbox("Select Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
+            exercise = st.selectbox("Select Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
             st.number_input("Target Sets", min_value=1, max_value=10, value=3, step=1, key="plan_sets")
             st.number_input("Reps per Set", min_value=1, max_value=50, value=10, step=1, key="plan_reps")
             start_session_button = st.button("Start Workout", key="start_workout_button", width="stretch")
@@ -147,8 +148,8 @@ def main():
                 "video": True,
                 "audio": False
             },
-            async_processing=True, # Enable async processing for better performance
-            video_processor_factory=None, # Replace with your actual video processor class
+            async_processing=True,   # Enable async processing for better performance
+            video_processor_factory=VideoProcessorClass,
             rtc_configuration = {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
             
         )

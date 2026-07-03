@@ -10,7 +10,9 @@ from detectors.squat import SquatDetector
 from detectors.pushup import PushUpDetector
 from detectors.shoulder_press import ShoulderPressDetector
 from detectors.lunges import LungesDetector
-from services.config import POSE_CONNECTIONS 
+from services.config.workout_config import POSE_CONNECTIONS 
+import numpy as np
+import av
 
 class VideoProcessorClass(VideoProcessorBase):
     def __init__(self):
@@ -25,7 +27,8 @@ class VideoProcessorClass(VideoProcessorBase):
             base_options=base_options,
             running_mode=vision.RunningMode.VIDEO,
             min_pose_detection_confidence=0.7,
-            min_pose_landmark_confidence=0.7,
+            min_pose_presence_confidence=0.7,
+            min_tracking_confidence = 0.7,
             output_segmentation_masks=False
         )
         
@@ -91,7 +94,7 @@ class VideoProcessorClass(VideoProcessorBase):
         cv2.putText(
             img,
             "NO POSE DETECTED",         # text to be drawn
-            (30, 50),                   # location of the text in the image (x, y)
+            (30, 50),                   # top left corner
             cv2.FONT_HERSHEY_SIMPLEX,   # font type
             1,                          # font scale (size of the text) 
             (0, 255, 0),                # color of the text in BGR format (green in this case)
@@ -110,3 +113,130 @@ class VideoProcessorClass(VideoProcessorBase):
             cv2.LINE_AA,
         )
 
+    # overlays are Texts that are drawn on image
+    # types : 1. Metrics ( depth, swing, balance)
+    #         2. Warnings
+    
+    # we will display metrics on bottom left corner (20, h - 20)
+    # and warning on top left corner 
+    
+    def _draw_overlays(self, img, metrics, ex_type):
+        if ex_type == "Squats":
+            self._draw_squats_overlays(img, metrics)
+        elif ex_type == "Push-ups":
+            self._draw_pushup_overlays(img, metrics)
+        elif ex_type == "Biceps Curls":
+            self._draw_curl_overlays(img, metrics)
+        elif ex_type == "Shoulder Press":
+            self._draw_press_overlays(img, metrics)
+        elif ex_type == "Lunges":
+            self._draw_lunge_overlays(img, metrics)
+
+
+    def _draw_squats_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        # Show depth while doing squats
+        cv2.putText(
+            img,
+            f"DEPTH: {metrics['depth_status']}",
+            (20, h - 20),       # bottom left corner
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+    
+    def _draw_pushup_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        # show body alignment during pushups
+        cv2.putText(
+            img,
+            f"BODY: {metrics['body_alignment']} | HIP: {metrics['hip_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_curl_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        # show swing of arms
+        cv2.putText(
+            img,
+            f"SWING: {metrics['swing_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_press_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        # show extension of arms
+        cv2.putText(
+            img,
+            f"EXT: {metrics['extension_status']} | BACK: {metrics['back_arch_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+
+    def _draw_lunge_overlays(self, img, metrics):
+        h, _ = img.shape[:2]
+
+        # show body balance status
+        cv2.putText(
+            img,
+            f"BALANCE: {metrics['balance_status']}",
+            (20, h - 20),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+        )
+        
+        
+    # recv method
+    def recv(self, frame):
+        # AV img >> openCV img
+        image = np.asarray(
+            cv2.flip(frame.to_ndarray(format="bgr24"), 1),      #1 -> mirror flip
+            dtype=np.uint8
+        )
+        mp_image = mp.Image(
+            image_format=mp.ImageFormat.SRGB,
+            data=cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  #convt: rgb -> bgr 
+        )
+
+        self._frame_timestamps_ms += 30
+        result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+
+        if result.pose_landmarks:
+            landmarks = result.pose_landmarks[0]        # 1st detected person, mediapipe gives list of detected persons in frame
+            self._draw_skeleton(image, landmarks)
+            ex_type = self.get_exercise()
+            detector = self._detectors.get(ex_type)
+
+            if detector:
+                metrics = detector.process(landmarks)
+                metrics["pose_detected"] = True
+                self._draw_overlays(image, metrics, ex_type)
+                self.set_latest_metrics(metrics)
+        else:
+            self._draw_no_pose_warnings(image)
+            
+            # with self._lock:
+            #     if self._latest_metrics is not None:
+            #         self._latest_metrics["pose_detected"] = False
+            #     else:
+            #         self._latest_metrics = {"pose_detected": False}
+
+        return av.VideoFrame.from_ndarray(image, format="bgr24")
