@@ -60,52 +60,54 @@ StayFit/
 ```
 
 ## How It Works
-  The user logs in with a username.
-  The user selects an exercise, target sets, and reps per set.
-  The webcam starts through Streamlit WebRTC.
-  MediaPipe detects body landmarks in real time.
-  Exercise-specific detector classes calculate reps and form metrics.
-  Workout progress is updated live in the sidebar.
-  Completed sets are saved to the local SQLite database.
-  The AI coach gives text and voice feedback during the workout.
+  - The user logs in with a username.
+  - The user selects an exercise, target sets, and reps per set.
+  - The webcam starts through Streamlit WebRTC.
+  - MediaPipe detects body landmarks in real time.
+  - Exercise-specific detector classes calculate reps and form metrics.
+  - Workout progress is updated live in the sidebar.
+  - Completed sets are saved to the local SQLite database.
+  - The AI coach gives text and voice feedback during the workout.
 
   
 ## Exercise Metrics
 1. Squats
-    Knee angle
-    Back angle
-    Depth status
+    - Knee angle
+    - Back angle
+    - Depth status
 2. Push-ups
-    Elbow angle
-    Body alignment
-    Hip position
+    - Elbow angle
+    - Body alignment
+    - Hip position
 3. Biceps Curls
-    Elbow angle
-    Elbow stability
-    Swing detection
+    - Elbow angle
+    - Elbow stability
+    - Swing detection
 4. Shoulder Press
-    Elbow angle
-    Arm extension
-    Back arch status
+    - Elbow angle
+    - Arm extension
+    - Back arch status
 5. Lunges
-    Front knee angle
-    Torso angle
-    Balance status
+    - Front knee angle
+    - Torso angle
+    - Balance status
    
 ## Notes
-    Make sure camera permission is enabled in your browser.
-    Use good lighting for better pose detection.
-    Keep your full body visible in the camera frame.
-    Voice coaching depends on the Groq API and text-to-speech availability.
-    Workout history is stored locally in data/stayfit.db.
+   -  Make sure camera permission is enabled in your browser.
+   -  Use good lighting for better pose detection.
+   - Keep your full body visible in the camera frame.
+   - Voice coaching depends on the Groq API and text-to-speech availability.
+   -  Workout history is stored locally in data/stayfit.db.
     
 ## Future Improvements
-  More exercises
-  Personalized workout plans
-  Better progress analytics
-  Streaks and achievements
-  Improved voice coaching
-  Form score after each workout
-  Mobile-friendly layout
-  License
-  This project is for educational and personal fitness assistance purposes.
+  - More exercises
+  - Personalized workout plans
+  - Better progress analytics
+  - Streaks and achievements
+  - Improved voice coaching
+  - Form score after each workout
+  - Mobile-friendly layout
+
+  
+## License
+This project is for educational and personal fitness assistance purposes.
