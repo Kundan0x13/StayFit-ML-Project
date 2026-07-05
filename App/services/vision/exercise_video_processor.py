@@ -13,6 +13,7 @@ from detectors.lunges import LungesDetector
 from services.config.workout_config import POSE_CONNECTIONS 
 import numpy as np
 import av
+from pathlib import Path
 
 class VideoProcessorClass(VideoProcessorBase):
     def __init__(self):
